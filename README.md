@@ -8,13 +8,6 @@ Our paper was accepted by **CVPR 2026**:
 
 [GeCo: Geometry-Consistent Regularization for Domain Generalized Semantic Segmentation](https://openaccess.thecvf.com/content/CVPR2026/papers/Zang_GeCo_Geometry-Consistent_Regularization_for_Domain_Generalized_Semantic_Segmentation_CVPR_2026_paper.pdf)
 
-## Highlights
-
-- Geometry-aware consistency regularization for domain generalized semantic segmentation.
-- DINOv2-L + Mask2Former training recipe for GTAV -> Cityscapes / BDD / Mapillary.
-- Training and evaluation scripts for one-GPU Slurm runs.
-- No inference-time regularization loss: GeCo is used during training, then the trained segmentor is evaluated normally.
-
 ## Repository Layout
 
 ```text
