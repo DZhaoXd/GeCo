@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.so
+
+data/
+checkpoints/
+work_dirs/
+sbatch/logs/
+
+*.pth
+*.pt
+*.ckpt
+*.log
+
+.mim/
+.vscode/
+.idea/

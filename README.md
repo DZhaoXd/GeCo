@@ -1,2 +1,172 @@
 # GeCo
-PyTorch Implementation for Geometry-Consistent Regularization for Domain Generalized Semantic Segmentation [CVPR2026]
+
+**Geometry-Consistent Regularization for Domain Generalized Semantic Segmentation**
+
+GeCo is a geometry-consistent regularization framework for domain generalized semantic segmentation. The idea is simple in spirit: when a model leaves the comfort of its source domain, its predictions should still respect the local geometry of the representation space. GeCo perturbs features along geometry-aware directions and regularizes the segmentation output to stay consistent under those perturbations.
+
+Our paper was accepted by **CVPR 2026**:
+
+[GeCo: Geometry-Consistent Regularization for Domain Generalized Semantic Segmentation](https://openaccess.thecvf.com/content/CVPR2026/papers/Zang_GeCo_Geometry-Consistent_Regularization_for_Domain_Generalized_Semantic_Segmentation_CVPR_2026_paper.pdf)
+
+## Highlights
+
+- Geometry-aware consistency regularization for domain generalized semantic segmentation.
+- DINOv2-L + Mask2Former training recipe for GTAV -> Cityscapes / BDD / Mapillary.
+- Training and evaluation scripts for one-GPU Slurm runs.
+- No inference-time regularization loss: GeCo is used during training, then the trained segmentor is evaluated normally.
+
+## Repository Layout
+
+```text
+configs/
+  _base_/                 # dataset, runtime, and model base configs
+  geco/                   # GeCo training and evaluation configs
+rein/
+  models/utils/           # GeCo regularizer
+  models/segmentors/      # GeCo segmentation wrapper
+tools/
+  train.py
+  test.py
+  convert_models/
+sbatch/
+  train_eval_geco_dinov2_gta_1gpu.sbatch
+  eval_geco_dinov2_gta_domains_1gpu.sbatch
+```
+
+## Installation
+
+Create an environment compatible with PyTorch, MMCV, MMEngine, MMSegmentation, and MMDetection. The exact versions we used on our cluster were:
+
+```bash
+conda create -n geco python=3.10 -y
+conda activate geco
+
+pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.2+cu117 \
+  --index-url https://download.pytorch.org/whl/cu117
+
+pip install mmengine==0.10.7 mmcv==2.0.0 mmsegmentation==1.2.2 mmdet==3.3.0
+pip install -r requirements.txt
+```
+
+You also need the DINOv2-L pretrained checkpoint:
+
+```text
+checkpoints/dinov2_vitl14_pretrain.pth
+```
+
+The Slurm script will convert it on first use:
+
+```text
+checkpoints/dinov2_geco_converted.pth
+```
+
+## Dataset Format
+
+Place datasets under `data/`. For the default GTAV -> Cityscapes / BDD / Mapillary experiment, the expected layout is:
+
+```text
+data/
+  gta/
+    images/
+    labels/
+  cityscapes/
+    leftImg8bit/
+    gtFine/
+  bdd100k/
+    images/
+      10k/
+        val/
+    labels/
+      sem_seg/
+        masks/
+          val/
+  mapillary/
+    validation/
+      images/
+      labels/
+```
+
+The exact paths used by the dataloaders are defined in:
+
+```text
+configs/_base_/datasets/gta_512x512.py
+configs/_base_/datasets/cityscapes_512x512.py
+configs/_base_/datasets/bdd100k_512x512.py
+configs/_base_/datasets/mapillary_512x512.py
+configs/_base_/datasets/dg_gta_512x512.py
+```
+
+If your local dataset tree differs, update those config files rather than changing the training code.
+
+## Train GeCo
+
+Default GeCo training config:
+
+```text
+configs/geco/geco_dinov2-L_mask2former_gta.py
+```
+
+Run training and three-domain evaluation with:
+
+```bash
+sbatch sbatch/train_eval_geco_dinov2_gta_1gpu.sbatch
+```
+
+For a non-Slurm run:
+
+```bash
+python tools/train.py configs/geco/geco_dinov2-L_mask2former_gta.py \
+  --work-dir work_dirs/geco_dinov2_gta
+```
+
+## Evaluate GeCo
+
+Evaluate a trained checkpoint on Cityscapes, BDD, and Mapillary:
+
+```bash
+CHECKPOINT=work_dirs/geco_dinov2_gta/iter_40000.pth \
+sbatch sbatch/eval_geco_dinov2_gta_domains_1gpu.sbatch
+```
+
+Or run one domain manually:
+
+```bash
+python tools/test.py \
+  configs/geco/eval_geco_gta_to_cityscapes_512x512.py \
+  work_dirs/geco_dinov2_gta/iter_40000.pth \
+  --backbone checkpoints/dinov2_geco_converted.pth \
+  --work-dir work_dirs/eval_geco_dinov2_gta/cityscapes
+```
+
+## Main Config Knobs
+
+The default GeCo regularizer is configured in `configs/geco/geco_dinov2-L_mask2former_gta.py`:
+
+```python
+geco_regularizer=dict(
+    alpha=0.1,
+    beta=0.2,
+    lambda_geo=0.1,
+    num_neighbors=8,
+    tangent_dim=4,
+    perturb_levels=(-1,),
+    warmup_iters=1000,
+)
+```
+
+This is the setting we recommend starting from.
+
+## Citation
+
+If GeCo helps your research, please cite:
+
+```bibtex
+@InProceedings{Zang_2026_CVPR,
+    author    = {Zang, Qi and Zhao, Dong and Pu, Nan and Li, Wenjing and Zhong, Zhun and Wang, Meng},
+    title     = {GeCo: Geometry-Consistent Regularization for Domain Generalized Semantic Segmentation},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {871-881}
+}
+```
