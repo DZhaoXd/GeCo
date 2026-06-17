@@ -8,6 +8,45 @@ Our paper was accepted by **CVPR 2026**:
 
 [GeCo: Geometry-Consistent Regularization for Domain Generalized Semantic Segmentation](https://openaccess.thecvf.com/content/CVPR2026/papers/Zang_GeCo_Geometry-Consistent_Regularization_for_Domain_Generalized_Semantic_Segmentation_CVPR_2026_paper.pdf)
 
+## Pipeline
+
+![GeCo pipeline](Figs/GeCo_pipeline.png)
+
+GeCo encourages segmentation predictions to remain stable under geometry-aware feature perturbations. The pipeline above illustrates how geometry-consistent regularization is injected into the training process while preserving the standard source-domain supervised objective.
+
+## Model Zoo
+
+We provide a trained GeCo checkpoint for the default GTA5 512x512 setting:
+
+```text
+best_mean_mIoU_iter_16000.pth
+```
+
+This checkpoint is trained on GTA5 at 512x512 resolution and selected by best validation mean mIoU over Cityscapes, BDD100K, and Mapillary:
+
+```text
+Cityscapes: 71.87
+BDD100K:    60.10
+Mapillary:  71.71
+Average:    67.89
+```
+
+The checkpoint is hosted on Google Drive:
+
+[Download GeCo GTA5 512 checkpoint](https://drive.google.com/open?id=1sw-KOr5xIhFev0V3mO4MQvJivtXyfSCn)
+
+Drive path:
+
+```text
+GeCo/weights/best_mean_mIoU_iter_16000.pth
+```
+
+SHA256:
+
+```text
+afe9a0c16b4387211ae7591ef9712b246a557530842f2f45ea9a7ff80185f997
+```
+
 ## Repository Layout
 
 ```text
