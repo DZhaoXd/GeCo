@@ -81,7 +81,15 @@ else
     python tools/train.py "${CONFIG}" --work-dir "${WORK_DIR}"
 fi
 
-if [[ -f "${WORK_DIR}/last_checkpoint" ]]; then
+BEST_CHECKPOINT="$(
+    find "${WORK_DIR}" -maxdepth 1 -type f -name 'best_*.pth' -printf '%T@ %p\n' 2>/dev/null \
+        | sort -nr \
+        | awk 'NR==1 {print $2}'
+)"
+if [[ -n "${BEST_CHECKPOINT}" ]]; then
+    CHECKPOINT="${BEST_CHECKPOINT}"
+    echo "Found best-val checkpoint: ${CHECKPOINT}"
+elif [[ -f "${WORK_DIR}/last_checkpoint" ]]; then
     CHECKPOINT="$(cat "${WORK_DIR}/last_checkpoint")"
 else
     CHECKPOINT="${WORK_DIR}/iter_40000.pth"

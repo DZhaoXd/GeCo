@@ -23,3 +23,10 @@ model = dict(
         prototypes_per_class=4,
     ),
 )
+
+default_hooks = dict(
+    checkpoint=dict(
+        save_best="mean_mIoU",
+        rule="greater",
+    ),
+)

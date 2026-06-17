@@ -1,0 +1,21 @@
+_base_ = "./geco_dinov2-L_mask2former_gta_1024x1024.py"
+
+test_dataloader = dict(
+    _delete_=True,
+    batch_size=1,
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(type="DefaultSampler", shuffle=False),
+    dataset={{_base_.val_bdd}},
+)
+val_dataloader = dict(
+    _delete_=True,
+    batch_size=1,
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(type="DefaultSampler", shuffle=False),
+    dataset={{_base_.val_bdd}},
+)
+
+test_evaluator = dict(_delete_=True, type="ShapeAlignedIoUMetric", iou_metrics=["mIoU"])
+val_evaluator = dict(_delete_=True, type="ShapeAlignedIoUMetric", iou_metrics=["mIoU"])
